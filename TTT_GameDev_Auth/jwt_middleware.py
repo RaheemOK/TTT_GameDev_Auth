@@ -7,13 +7,14 @@ from django.http import JsonResponse
 class JWTAuthenticationMiddleware(MiddlewareMixin):
     # List of public endpoints that don't require authentication
     public_paths = [
-        'api/register/',  # Replace with the actual path to your register endpoint
-        # ... other public paths ...
+        '/api/register/',
+        '/admin/login/',
+        '/admin/'
     ]
 
     def process_request(self, request):
         # Skip JWT authentication for public paths
-        if request.path in self.public_paths:
+        if request.path.startswith(tuple(self.public_paths)):
             return None
 
         token = request.META.get('HTTP_AUTHORIZATION')
