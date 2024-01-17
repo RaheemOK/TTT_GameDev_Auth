@@ -1,7 +1,11 @@
+from django.contrib.auth import authenticate, get_user_model
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
-from .serializers import UserRegistrationSerializer
+from .serializers import UserRegistrationSerializer, UserLoginSerializer
+from rest_framework_simplejwt.tokens import RefreshToken
+
+User = get_user_model()
 
 
 class RegisterUserView(APIView):
@@ -12,4 +16,23 @@ class RegisterUserView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)
+
+
+class LoginUserView(APIView):
+
+    def post(self, request, *args, **kwargs):
+        serializer = UserLoginSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.validated_data
+            refresh = RefreshToken.for_user(user)
+
+            # Set refresh token in HTTP-only cookie
+            response = Response()
+            response.set_cookie(key='refreshtoken', value=str(refresh), httponly=True)
+            response.data = {
+                'access': str(refresh.access_token)
+            }
+
+            return response
         return Response(serializer.errors, status=400)
