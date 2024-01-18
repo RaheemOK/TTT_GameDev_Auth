@@ -8,6 +8,7 @@ class JWTAuthenticationMiddleware(MiddlewareMixin):
     # List of public endpoints that don't require authentication
     public_paths = [
         '/api/register/',
+        '/api/logout/',
         '/api/login/',
         '/admin/login/',
         '/admin/'
