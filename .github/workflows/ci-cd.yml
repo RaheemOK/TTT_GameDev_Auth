@@ -33,7 +33,7 @@ jobs:
       run: docker build --platform linux/amd64 --no-cache -t europe-west2-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/ttt-gamedev-auth-artifact-registry/ttt-gamedev-auth-micro:latest .
 
     - name: Authenticate with Google Artifact Registry
-      run: echo ${{ secrets.GCP_CREDENTIALS }} | docker login -u _json_key --password-stdin https://europe-west2-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/ttt-gamedev-auth-artifact-registry
+      run: cat gcp-credentials.json | docker login -u _json_key --password-stdin https://europe-west2-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/ttt-gamedev-auth-artifact-registry
 
     - name: Push Docker Image
       run: docker push europe-west2-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/ttt-gamedev-auth-artifact-registry/ttt-gamedev-auth-micro:latest
