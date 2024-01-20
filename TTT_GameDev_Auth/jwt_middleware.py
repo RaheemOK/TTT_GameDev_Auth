@@ -3,7 +3,6 @@ import jwt
 from django.conf import settings
 from django.http import JsonResponse
 
-
 class JWTAuthenticationMiddleware(MiddlewareMixin):
     # List of public endpoints that don't require authentication
     public_paths = [
