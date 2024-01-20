@@ -53,25 +53,17 @@ REST_FRAMEWORK = {
     # ...
 }
 
-# Simple JWT settings
-
-JWT_PUBLIC_KEY = """
------BEGIN PUBLIC KEY-----
-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAhklVlKHtiv2W1Zzt7IWC
-gzcZtW5L7BgSfGnYGPpAB2+VhyBTeE/1OnXV+KGtDSdtbsjE79xkrzxEo9bAygdG
-gnZRYY45pdToF19t0Lo8gaVMj5Qz96muACO2M5iPWrQbMc+AGyYujcoRs/xAEN2V
-EUpjJG2MjlTzozjmMxRq6TrrsBu7wRk/Tpcl5TgpZ/uU8ah+5rK64hnUL4I/yBbn
-LAJj+8D522sBxYTwZWnz6Smx6yIzEZnhwTw30gqkSLPnHgxWtoZCwKSTFOpWhm9I
-XwOPVt4odQg0SE1WOUq16PZanShLC82eM3JQOwgUbJV/6xNqzKg8bYX6hRhAMRx2
-xQIDAQAB
------END PUBLIC KEY-----
-"""
 
 SIMPLE_JWT = {
+    'ALGORITHM': 'RS256',
+    'SIGNING_KEY': open('private_key.pem').read(),
+    'VERIFYING_KEY': open('private_key.pem').read(),
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     # ...
 }
+# Simple JWT settings
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

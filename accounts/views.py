@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from .serializers import UserRegistrationSerializer, UserLoginSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
+import requests
 
 User = get_user_model()
 
@@ -15,7 +16,22 @@ class RegisterUserView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = UserRegistrationSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            user = serializer.save()  # Save the user and get the instance
+
+            # Notify the Tournament Structure service
+            try:
+                response = requests.post(
+                    'http://127.0.0.1:8000/api/create-user/',
+                    json={'auth_user_id': user.id}
+                )
+                if response.status_code != 201:
+                    # Handle unsuccessful user creation in the Tournament service
+                    # Log the error or take other actions as needed
+                    pass
+            except requests.RequestException as e:
+                # Log this exception or take necessary actions
+                pass
+
             return Response(serializer.data, status=201)
         return Response(serializer.errors, status=400)
 
