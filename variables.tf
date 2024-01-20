@@ -10,3 +10,9 @@ variable "region" {
 variable "repository_id" {
   description = "The Artifact Registry repository ID"
 }
+
+variable "zone" {
+  description = "The GCP zone"
+  default     = "europe-west2-a"
+}
+

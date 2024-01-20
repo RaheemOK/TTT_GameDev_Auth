@@ -25,7 +25,7 @@ jobs:
       run: terraform init
 
     - name: Apply Terraform
-      run: terraform apply -auto-approve -var "project=${{ secrets.GCP_PROJECT_ID }}" -var "region=${{ secrets.GCP_REGION }}" -var "repository_id=${{ secrets.ARTIFACT_REPO_NAME }}"
+      run: terraform apply -auto-approve -var "project=${{ secrets.GCP_PROJECT_ID }}" -var "region=${{ secrets.GCP_REGION }}" -var "repository_id=${{ secrets.ARTIFACT_REPO_NAME }}" -var "zone=${{ secrets.GCP_ZONE }}"
       env:
         GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/gcp-credentials.json
 
