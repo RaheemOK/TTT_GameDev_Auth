@@ -17,7 +17,7 @@ resource "google_compute_address" "static_address" {
 
 resource "google_compute_instance" "vm_instance" {
   name         = "example-instance"
-  machine_type = "f1-micro"
+  machine_type = "e2-micro"
   zone         = var.zone
 
   boot_disk {
