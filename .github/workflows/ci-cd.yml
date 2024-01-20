@@ -25,15 +25,15 @@ jobs:
       run: terraform init
 
     - name: Apply Terraform
-      run: terraform apply -auto-approve -var "project=${{ secrets.GCP_PROJECT_ID }}" -var "region=europe-west2"
+      run: terraform apply -auto-approve -var "project=${{ secrets.GCP_PROJECT_ID }}" -var "region=${{ secrets.GCP_REGION }}" -var "repository_id=${{ secrets.ARTIFACT_REPO_NAME }}"
       env:
         GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/gcp-credentials.json
 
     - name: Build Docker Image
-      run: docker build --platform linux/amd64 --no-cache -t europe-west2-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/ttt-gamedev-auth-artifact-registry/ttt-gamedev-auth-micro:latest .
+      run: docker build --platform linux/amd64 --no-cache -t ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.ARTIFACT_REPO_NAME }}/ttt-gamedev-auth-micro:latest .
 
     - name: Authenticate with Google Artifact Registry
-      run: cat gcp-credentials.json | docker login -u _json_key --password-stdin https://europe-west2-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/ttt-gamedev-auth-artifact-registry
+      run: cat gcp-credentials.json | docker login -u _json_key --password-stdin https://${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.ARTIFACT_REPO_NAME }}
 
     - name: Push Docker Image
-      run: docker push europe-west2-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/ttt-gamedev-auth-artifact-registry/ttt-gamedev-auth-micro:latest
+      run: docker push ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.ARTIFACT_REPO_NAME }}/ttt-gamedev-auth-micro:latest

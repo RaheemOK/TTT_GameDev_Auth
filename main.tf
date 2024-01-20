@@ -5,8 +5,8 @@ provider "google" {
 
 resource "google_artifact_registry_repository" "my_repository" {
   provider = google
-  location = "europe-west2"
-  repository_id = "ttt-gamedev-auth-artifact-registry"
+  location = var.region
+  repository_id = var.repository_id
   format = "DOCKER"
 }
 
