@@ -4,7 +4,7 @@ from django.conf import settings
 from django.http import JsonResponse
 
 class JWTAuthenticationMiddleware(MiddlewareMixin):
-    # List of public endpoints that don't require authentication
+    # List of public endpoints that don't require authenticatio
     public_paths = [
         '/api/register/',
         '/api/logout/',
