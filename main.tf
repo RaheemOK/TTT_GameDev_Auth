@@ -5,14 +5,15 @@ provider "google" {
 
 # Check if the Artifact Registry repository exists
 data "google_artifact_registry_repository" "existing_repository" {
-  provider     = google
-  location     = var.region
+  count         = can(terraform.workspace == "default" ? 0 : 1)
+  provider      = google
+  location      = var.region
   repository_id = var.repository_id
 }
 
 # Create the Artifact Registry repository if it does not exist
 resource "google_artifact_registry_repository" "my_repository" {
-  count         = length(data.google_artifact_registry_repository.existing_repository.*.name) > 0 ? 0 : 1
+  count         = length(data.google_artifact_registry_repository.existing_repository.*.name) == 0 ? 1 : 0
   provider      = google
   location      = var.region
   repository_id = var.repository_id
@@ -21,19 +22,21 @@ resource "google_artifact_registry_repository" "my_repository" {
 
 # Check if the static IP exists
 data "google_compute_address" "existing_static_address" {
+  count  = can(terraform.workspace == "default" ? 0 : 1)
   name   = "vm-static-ip"
   region = var.region
 }
 
 # Create the static IP if it does not exist
 resource "google_compute_address" "static_address" {
-  count  = length(data.google_compute_address.existing_static_address.*.name) > 0 ? 0 : 1
+  count  = length(data.google_compute_address.existing_static_address.*.name) == 0 ? 1 : 0
   name   = "vm-static-ip"
   region = var.region
 }
 
 # Check if the VM instance exists
 data "google_compute_instance" "existing_vm" {
+  count  = can(terraform.workspace == "default" ? 0 : 1)
   name   = "ttt-gamedev-auth-micro-e2"
   zone   = var.zone
   project = var.project
@@ -41,7 +44,7 @@ data "google_compute_instance" "existing_vm" {
 
 # Create the VM instance if it does not exist
 resource "google_compute_instance" "vm_instance" {
-  count        = length(data.google_compute_instance.existing_vm.*.name) > 0 ? 0 : 1
+  count        = length(data.google_compute_instance.existing_vm.*.name) == 0 ? 1 : 0
   name         = "ttt-gamedev-auth-micro-e2"
   machine_type = "e2-micro"
   zone         = var.zone
