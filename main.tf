@@ -57,7 +57,7 @@ resource "google_compute_instance" "vm_instance" {
 }
 
 output "vm_external_ip" {
-  value = google_compute_address.static_address.address
+  value = google_compute_address.static_address[0].address
 }
 
 data "google_compute_address" "existing_static_address" {
