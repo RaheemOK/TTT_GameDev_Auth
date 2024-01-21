@@ -16,7 +16,7 @@ resource "google_compute_address" "static_address" {
   region = var.region
 }
 
-# Create a new VM instance
+
 resource "google_compute_instance" "vm_instance" {
   name         = "ttt-gamedev-auth-micro-e2"
   machine_type = "e2-micro"
