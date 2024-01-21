@@ -55,13 +55,27 @@ output "vm_external_ip" {
   value = google_compute_address.static_address.address
 }
 
+# Service Account Creation
 resource "google_service_account" "artifact_service_account" {
   account_id   = "artifact-admin-sa"
   display_name = "Artifact Registry Admin Service Account"
 }
 
+# Service Account Key Generation
+resource "google_service_account_key" "artifact_service_account_key" {
+  service_account_id = google_service_account.artifact_service_account.name
+  public_key_type    = "TYPE_X509_PEM_FILE"
+}
+
+# Assigning Roles
 resource "google_project_iam_member" "artifact_sa_role" {
   project = var.project
   role    = "roles/artifactregistry.admin"
   member  = "serviceAccount:${google_service_account.artifact_service_account.email}"
+}
+
+# Output the Service Account Key
+output "artifact_registry_service_account_key" {
+  value = base64decode(google_service_account_key.artifact_service_account_key.private_key)
+  sensitive = true
 }
