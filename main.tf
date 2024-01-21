@@ -22,7 +22,13 @@ resource "google_compute_address" "static_address" {
   region = var.region
 }
 
+data "google_compute_instance" "existing_vm" {
+  name   = "ttt-gamedev-auth-micro-e2"
+  zone   = var.zone
+}
+
 resource "google_compute_instance" "vm_instance" {
+  count        = length(data.google_compute_instance.existing_vm.*.id) > 0 ? 0 : 1
   name         = "ttt-gamedev-auth-micro-e2"
   machine_type = "e2-micro"
   zone         = var.zone
