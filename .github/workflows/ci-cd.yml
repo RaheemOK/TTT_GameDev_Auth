@@ -55,7 +55,7 @@ jobs:
         IP=$(cat vm_ip.txt)
         echo "Using VM IP: $IP" # For debugging
         chmod 600 private_key.pem
-        ssh -T -i private_key.pem -o StrictHostKeyChecking=no raheem@35.197.251.94 << EOF
+        ssh -T -i private_key.pem -vvv -o StrictHostKeyChecking=no raheem@35.197.251.94 << EOF
         docker stop ttt-gamedev-auth-micro || true &&
         docker rm ttt-gamedev-auth-micro || true &&
         docker pull europe-west2-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.ARTIFACT_REPO_NAME }}/ttt-gamedev-auth-micro:latest &&
