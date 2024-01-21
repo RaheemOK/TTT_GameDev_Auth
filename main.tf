@@ -20,9 +20,9 @@ resource "google_artifact_registry_repository" "my_repository" {
   format        = "DOCKER"
 }
 
-# Check if the static IP exists
+# Attempt to read existing static IP
 data "google_compute_address" "existing_static_address" {
-  count  = terraform.workspace == "default" ? 0 : 1
+  count  = "vm-static-ip"
   name   = "vm-static-ip"
   region = var.region
 }
