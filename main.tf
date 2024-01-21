@@ -10,13 +10,17 @@ resource "google_artifact_registry_repository" "my_repository" {
   format       = "DOCKER"
 }
 
-# Create a new static IP address
+# Attempt to fetch existing static IP address, create new if not found
 resource "google_compute_address" "static_address" {
   name   = "vm-static-ip"
   region = var.region
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
-
+# Attempt to fetch existing VM, create new if not found
 resource "google_compute_instance" "vm_instance" {
   name         = "ttt-gamedev-auth-micro-e2"
   machine_type = "e2-micro"
@@ -30,6 +34,9 @@ resource "google_compute_instance" "vm_instance" {
 
   network_interface {
     network = "default"
+    access_config {
+      nat_ip = try(lookup(google_compute_address.static_address, "address", ""), "")
+    }
   }
 
   metadata = {
@@ -41,13 +48,8 @@ resource "google_compute_instance" "vm_instance" {
     EOT
   }
 
-  network_interface {
-    network = "default"
-
-    access_config {
-      // Associate the static IP address with the VM
-      nat_ip = google_compute_address.static_address.address
-    }
+  lifecycle {
+    create_before_destroy = true
   }
 }
 
