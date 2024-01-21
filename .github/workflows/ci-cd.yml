@@ -49,6 +49,7 @@ jobs:
         chmod 600 private_key.pem
         echo "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
 
+
     - name: Deploy to GCE VM
       run: |
         ssh -i private_key.pem -o StrictHostKeyChecking=no ${{ secrets.VM_USERNAME }}@${{ env.VM_IP }} "
