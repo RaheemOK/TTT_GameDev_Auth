@@ -16,12 +16,16 @@ jobs:
         uses: hashicorp/setup-terraform@v1
 
       - name: Decode GCP Credentials
-        run: echo "$GCP_CREDENTIALS" | base64 -d > gcp-credentials.json
+        run: |
+          echo "$GCP_CREDENTIALS" | base64 -d > gcp-credentials.json
+          echo "GOOGLE_APPLICATION_CREDENTIALS=${GITHUB_WORKSPACE}/gcp-credentials.json" >> $GITHUB_ENV
         env:
           GCP_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}
 
       - name: Initialize Terraform
-        run: terraform init
+        run: |
+          echo "Initializing Terraform with GOOGLE_APPLICATION_CREDENTIALS set to: $GOOGLE_APPLICATION_CREDENTIALS"
+          terraform init
 
       - name: Check Terraform State
         run: |
