@@ -3,32 +3,45 @@ provider "google" {
   region  = var.region
 }
 
-resource "google_artifact_registry_repository" "my_repository" {
+# Check if the Artifact Registry repository exists
+data "google_artifact_registry_repository" "existing_repository" {
   provider     = google
   location     = var.region
   repository_id = var.repository_id
-  format       = "DOCKER"
 }
 
+# Create the Artifact Registry repository if it does not exist
+resource "google_artifact_registry_repository" "my_repository" {
+  count         = length(data.google_artifact_registry_repository.existing_repository.*.name) > 0 ? 0 : 1
+  provider      = google
+  location      = var.region
+  repository_id = var.repository_id
+  format        = "DOCKER"
+}
+
+# Check if the static IP exists
 data "google_compute_address" "existing_static_address" {
   name   = "vm-static-ip"
   region = var.region
 }
 
+# Create the static IP if it does not exist
+resource "google_compute_address" "static_address" {
+  count  = length(data.google_compute_address.existing_static_address.*.name) > 0 ? 0 : 1
+  name   = "vm-static-ip"
+  region = var.region
+}
+
+# Check if the VM instance exists
 data "google_compute_instance" "existing_vm" {
   name   = "ttt-gamedev-auth-micro-e2"
   zone   = var.zone
   project = var.project
 }
 
-resource "google_compute_address" "static_address" {
-  count  = data.google_compute_address.existing_static_address.id == "" ? 1 : 0
-  name   = "vm-static-ip"
-  region = var.region
-}
-
+# Create the VM instance if it does not exist
 resource "google_compute_instance" "vm_instance" {
-  count        = data.google_compute_instance.existing_vm.id == "" ? 1 : 0
+  count        = length(data.google_compute_instance.existing_vm.*.name) > 0 ? 0 : 1
   name         = "ttt-gamedev-auth-micro-e2"
   machine_type = "e2-micro"
   zone         = var.zone
@@ -42,7 +55,7 @@ resource "google_compute_instance" "vm_instance" {
   network_interface {
     network = "default"
     access_config {
-      nat_ip = data.google_compute_address.existing_static_address.id != "" ? data.google_compute_address.existing_static_address.address : google_compute_address.static_address[0].address
+      nat_ip = length(data.google_compute_address.existing_static_address.*.name) > 0 ? data.google_compute_address.existing_static_address.address : google_compute_address.static_address[0].address
     }
   }
 
@@ -52,5 +65,5 @@ resource "google_compute_instance" "vm_instance" {
 }
 
 output "vm_external_ip" {
-  value = data.google_compute_address.existing_static_address.id != "" ? data.google_compute_address.existing_static_address.address : google_compute_address.static_address[0].address
+  value = length(data.google_compute_address.existing_static_address.*.name) > 0 ? data.google_compute_address.existing_static_address.address : google_compute_address.static_address[0].address
 }
