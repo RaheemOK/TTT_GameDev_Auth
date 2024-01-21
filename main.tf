@@ -10,28 +10,18 @@ resource "google_artifact_registry_repository" "my_repository" {
   format       = "DOCKER"
 }
 
-# Check if the static IP exists
-data "google_compute_address" "existing_static_address" {
-  name   = "vm-static-ip"
-  region = var.region
-}
-
-# Create static IP if it doesn't exist
+# Attempt to fetch existing static IP address, create new if not found
 resource "google_compute_address" "static_address" {
-  count  = data.google_compute_address.existing_static_address.id == "" ? 1 : 0
   name   = "vm-static-ip"
   region = var.region
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
-# Check if the VM exists
-data "google_compute_instance" "existing_vm" {
-  name   = "ttt-gamedev-auth-micro-e2"
-  zone   = var.zone
-}
-
-# Create VM if it doesn't exist
+# Attempt to fetch existing VM, create new if not found
 resource "google_compute_instance" "vm_instance" {
-  count        = data.google_compute_instance.existing_vm.id == "" ? 1 : 0
   name         = "ttt-gamedev-auth-micro-e2"
   machine_type = "e2-micro"
   zone         = var.zone
@@ -45,7 +35,7 @@ resource "google_compute_instance" "vm_instance" {
   network_interface {
     network = "default"
     access_config {
-      nat_ip = data.google_compute_address.existing_static_address.id != "" ? data.google_compute_address.existing_static_address.address : google_compute_address.static_address[0].address
+      nat_ip = try(lookup(google_compute_address.static_address, "address", ""), "")
     }
   }
 
@@ -57,8 +47,12 @@ resource "google_compute_instance" "vm_instance" {
       apt-get install -y docker.io
     EOT
   }
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 output "vm_external_ip" {
-  value = data.google_compute_address.existing_static_address.id != "" ? data.google_compute_address.existing_static_address.address : google_compute_address.static_address[0].address
+  value = google_compute_address.static_address.address
 }
