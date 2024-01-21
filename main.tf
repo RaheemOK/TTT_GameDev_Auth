@@ -48,6 +48,11 @@ resource "google_compute_instance" "vm_instance" {
 
   metadata = {
     "ssh-keys" = "raheem:${file("id_rsa_ttt_gda_micro.pub")}"
+    "startup-script" = <<-EOT
+      #!/bin/bash
+      apt-get update
+      apt-get install -y docker.io
+    EOT
   }
 }
 
