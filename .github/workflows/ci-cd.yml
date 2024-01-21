@@ -55,11 +55,15 @@ jobs:
 
     - name: Deploy to GCE VM
       run: |
+        echo "Contents of vm_ip.txt:"
+        cat vm_ip.txt
         IP=$(cat vm_ip.txt)
         echo "Using VM IP: $IP"
+        echo "SSH command: ssh -i id_rsa_ttt_gda_micro -o StrictHostKeyChecking=no raheem@$IP"
         ssh -i id_rsa_ttt_gda_micro -o StrictHostKeyChecking=no raheem@$IP << EOF
+        echo "Inside VM"
         docker stop ttt-gamedev-auth-micro || true &&
         docker rm ttt-gamedev-auth-micro || true &&
-        docker pull europe-west2-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.ARTIFACT_REPO_NAME }}/ttt-gamedev-auth-micro:latest &&
-        docker run -d -p 8080:8080 --name ttt-gamedev-auth-micro europe-west2-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.ARTIFACT_REPO_NAME }}/ttt-gamedev-auth-micro:latest
+        docker pull ***-docker.pkg.dev/***/***/ttt-gamedev-auth-micro:latest &&
+        docker run -d -p 8080:8080 --name ttt-gamedev-auth-micro ***-docker.pkg.dev/***/***/ttt-gamedev-auth-micro:latest
         EOF
