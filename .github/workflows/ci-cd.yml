@@ -5,65 +5,73 @@ on:
     branches:
       - main
 
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v2
+      - name: Checkout Repository
+        uses: actions/checkout@v2
 
-    - name: Set up Terraform
-      uses: hashicorp/setup-terraform@v1
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v1
 
-    - name: Decode GCP Credentials
-      run: echo "$GCP_CREDENTIALS" | base64 -d > gcp-credentials.json
-      env:
-        GCP_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}
+      - name: Decode GCP Credentials
+        run: echo "$GCP_CREDENTIALS" | base64 -d > gcp-credentials.json
+        env:
+          GCP_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}
 
-    - name: Initialize Terraform
-      run: terraform init
+      - name: Initialize Terraform
+        run: terraform init
 
-    - name: Apply Terraform
-      run: terraform apply -auto-approve -var "project=${{ secrets.GCP_PROJECT_ID }}" -var "region=${{ secrets.GCP_REGION }}" -var "repository_id=${{ secrets.ARTIFACT_REPO_NAME }}" -var "zone=${{ secrets.GCP_ZONE }}"
-      env:
-        GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/gcp-credentials.json
+      - name: Check Terraform State
+        run: |
+          if terraform state list | grep -q 'google_compute_instance.vm_instance' && \
+             terraform state list | grep -q 'google_compute_address.static_address'; then
+            echo "Infrastructure already exists. Skipping Terraform apply."
+            exit 0
+          fi
+        continue-on-error: true
 
-    - name: Build Docker Image
-      run: docker build --platform linux/amd64 --no-cache -t ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.ARTIFACT_REPO_NAME }}/ttt-gamedev-auth-micro:latest .
+      - name: Apply Terraform
+        run: terraform apply -auto-approve -var "project=${{ secrets.GCP_PROJECT_ID }}" -var "region=${{ secrets.GCP_REGION }}" -var "repository_id=${{ secrets.ARTIFACT_REPO_NAME }}" -var "zone=${{ secrets.GCP_ZONE }}"
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/gcp-credentials.json
 
-    - name: Authenticate with Google Artifact Registry
-      run: cat gcp-credentials.json | docker login -u _json_key --password-stdin https://${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.ARTIFACT_REPO_NAME }}
+      - name: Build Docker Image
+        run: docker build --platform linux/amd64 --no-cache -t ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.ARTIFACT_REPO_NAME }}/ttt-gamedev-auth-micro:latest .
 
-    - name: Push Docker Image
-      run: docker push ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.ARTIFACT_REPO_NAME }}/ttt-gamedev-auth-micro:latest
+      - name: Authenticate with Google Artifact Registry
+        run: cat gcp-credentials.json | docker login -u _json_key --password-stdin https://${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.ARTIFACT_REPO_NAME }}
 
-    - name: Capture VM External IP to File
-      run: |
-        terraform output -raw vm_external_ip | grep -oP '(\d{1,3}\.){3}\d{1,3}' > vm_ip.txt
+      - name: Push Docker Image
+        run: docker push ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.ARTIFACT_REPO_NAME }}/ttt-gamedev-auth-micro:latest
 
-    - name: Decode SSH Key
-      run: echo "${{ secrets.SSH_PRIVATE_KEY }}" | base64 -d > id_rsa_ttt_gda_micro
-      env:
-        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Capture VM External IP to File
+        run: |
+          terraform output -raw vm_external_ip | grep -oP '(\d{1,3}\.){3}\d{1,3}' > vm_ip.txt
 
-    - name: Set up SSH Permissions
-      run: |
-        mkdir -p ~/.ssh
-        chmod 600 id_rsa_ttt_gda_micro
-        echo "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+      - name: Decode SSH Key
+        run: echo "${{ secrets.SSH_PRIVATE_KEY }}" | base64 -d > id_rsa_ttt_gda_micro
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
-    - name: Deploy to GCE VM
-      run: |
-        echo "Contents of vm_ip.txt:"
-        cat vm_ip.txt
-        IP=$(cat vm_ip.txt)
-        echo "Using VM IP: $IP"
-        echo "SSH command: ssh -i id_rsa_ttt_gda_micro -o StrictHostKeyChecking=no raheem@$IP"
-        ssh -i id_rsa_ttt_gda_micro -o StrictHostKeyChecking=no raheem@$IP << EOF
-        echo "Inside VM"
-        docker stop ttt-gamedev-auth-micro || true &&
-        docker rm ttt-gamedev-auth-micro || true &&
-        docker pull ***-docker.pkg.dev/***/***/ttt-gamedev-auth-micro:latest &&
-        docker run -d -p 8080:8080 --name ttt-gamedev-auth-micro ***-docker.pkg.dev/***/***/ttt-gamedev-auth-micro:latest
-        EOF
+      - name: Set up SSH Permissions
+        run: |
+          mkdir -p ~/.ssh
+          chmod 600 id_rsa_ttt_gda_micro
+          echo "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+
+      - name: Deploy to GCE VM
+        run: |
+          echo "Contents of vm_ip.txt:"
+          cat vm_ip.txt
+          IP=$(cat vm_ip.txt)
+          echo "Using VM IP: $IP"
+          echo "SSH command: ssh -i id_rsa_ttt_gda_micro -o StrictHostKeyChecking=no raheem@$IP"
+          ssh -i id_rsa_ttt_gda_micro -o StrictHostKeyChecking=no raheem@$IP << EOF
+          echo "Inside VM"
+          docker stop ttt-gamedev-auth-micro || true &&
+          docker rm ttt-gamedev-auth-micro || true &&
+          docker pull ***-docker.pkg.dev/***/***/ttt-gamedev-auth-micro:latest &&
+          docker run -d -p 8080:8080 --name ttt-gamedev-auth-micro ***-docker.pkg.dev/***/***/ttt-gamedev-auth-micro:latest
+          EOF
