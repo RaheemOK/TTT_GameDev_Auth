@@ -1,7 +1,7 @@
 terraform {
   backend "gcs" {
-    bucket  = "ttt_terrabucket"
-    prefix  = "terraform/state"
+    bucket = "ttt_terrabucket"
+    prefix = "terraform/state"
   }
 }
 
@@ -10,7 +10,6 @@ provider "google" {
   region  = var.region
 }
 
-
 resource "google_artifact_registry_repository" "my_repository" {
   provider     = google
   location     = var.region
@@ -18,17 +17,11 @@ resource "google_artifact_registry_repository" "my_repository" {
   format       = "DOCKER"
 }
 
-# Attempt to fetch existing static IP address, create new if not found
 resource "google_compute_address" "static_address" {
   name   = "vm-static-ip"
   region = var.region
-
-  lifecycle {
-    create_before_destroy = true
-  }
 }
 
-# Attempt to fetch existing VM, create new if not found
 resource "google_compute_instance" "vm_instance" {
   name         = "ttt-gamedev-auth-micro-e2"
   machine_type = "e2-micro"
@@ -43,7 +36,7 @@ resource "google_compute_instance" "vm_instance" {
   network_interface {
     network = "default"
     access_config {
-      nat_ip = try(lookup(google_compute_address.static_address, "address", ""), "")
+      nat_ip = google_compute_address.static_address.address
     }
   }
 
@@ -56,12 +49,7 @@ resource "google_compute_instance" "vm_instance" {
       usermod -aG docker raheem
     EOT
   }
-
-  lifecycle {
-    create_before_destroy = true
-  }
 }
-
 
 output "vm_external_ip" {
   value = google_compute_address.static_address.address
