@@ -15,6 +15,9 @@ resource "google_compute_address" "static_address" {
   name   = "vm-static-ip"
   region = var.region
 
+  # Use count to create the address only if it doesn't exist
+  count = length(data.google_compute_address.existing_static_address) == 0 ? 1 : 0
+
   lifecycle {
     create_before_destroy = true
   }
@@ -55,4 +58,9 @@ resource "google_compute_instance" "vm_instance" {
 
 output "vm_external_ip" {
   value = google_compute_address.static_address.address
+}
+
+data "google_compute_address" "existing_static_address" {
+  name   = "vm-static-ip"
+  region = var.region
 }
