@@ -36,6 +36,7 @@ jobs:
           fi
         continue-on-error: true
 
+
       - name: Apply Terraform
         run: terraform apply -auto-approve -var "project=${{ secrets.GCP_PROJECT_ID }}" -var "region=${{ secrets.GCP_REGION }}" -var "repository_id=${{ secrets.ARTIFACT_REPO_NAME }}" -var "zone=${{ secrets.GCP_ZONE }}"
         env:
