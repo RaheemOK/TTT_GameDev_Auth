@@ -46,15 +46,15 @@ jobs:
 
     - name: Set up SSH Permissions
       run: |
-          mkdir -p ~/.ssh  # Create .ssh directory if it doesn't exist
-          chmod 600 keygen
-          echo "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+        mkdir -p ~/.ssh  # Create .ssh directory if it doesn't exist
+        chmod 600 private_key.pem
+        echo "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
 
     - name: Deploy to GCE VM
       run: |
         IP=$(cat vm_ip.txt)
         echo "Using VM IP: $IP" # For debugging
-        ssh -i keygen -o StrictHostKeyChecking=no raheem@35.197.251.94
+        ssh -i private_key.pem -o StrictHostKeyChecking=no raheem@35.197.251.94
         docker stop ttt-gamedev-auth-micro || true &&
         docker rm ttt-gamedev-auth-micro || true &&
         docker pull europe-west2-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.ARTIFACT_REPO_NAME }}/ttt-gamedev-auth-micro:latest &&
