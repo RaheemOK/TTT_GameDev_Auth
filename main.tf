@@ -1,7 +1,15 @@
+terraform {
+  backend "gcs" {
+    bucket  = "ttt_terrabucket"
+    prefix  = "terraform/state"
+  }
+}
+
 provider "google" {
   project = var.project
   region  = var.region
 }
+
 
 resource "google_artifact_registry_repository" "my_repository" {
   provider     = google
