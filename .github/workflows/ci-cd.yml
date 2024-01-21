@@ -39,9 +39,12 @@ jobs:
 
     - name: Retrieve VM External IP
       run: |
-        echo "VM_IP=$(terraform output -raw vm_external_ip)" > temp_env
-        cat temp_env >> $GITHUB_ENV
-        rm temp_env
+        echo "VM_IP=$(terraform output -raw vm_external_ip)" >> $GITHUB_ENV
+
+    - name: Print Terraform Output
+      run: |
+        echo "Terraform Output for VM IP:"
+        terraform output -raw vm_external_ip
 
     - name: Decode SSH Key
       run: echo "${{ secrets.SSH_PRIVATE_KEY }}" | base64 -d > private_key.pem
