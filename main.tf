@@ -55,7 +55,7 @@ resource "google_compute_instance" "vm_instance" {
       apt-get install -y docker.io
       usermod -aG docker raheem
     EOT
-}
+  }
 
   lifecycle {
     create_before_destroy = true
