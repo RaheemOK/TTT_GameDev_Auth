@@ -39,12 +39,10 @@ jobs:
 
     - name: Retrieve VM External IP
       run: |
-        terraform output -raw vm_external_ip > vm_ip.txt
-
-    - name: Set VM IP Environment Variable
-      run: |
-        echo "VM_IP=$(cat vm_ip.txt)" >> $GITHUB_ENV
+        IP=$(terraform output -raw vm_external_ip | grep -oP '(\d{1,3}\.){3}\d{1,3}')
+        echo "VM_IP=$IP" >> $GITHUB_ENV
         cat $GITHUB_ENV # For debugging
+
 
     - name: Decode SSH Key
       run: echo "${{ secrets.SSH_PRIVATE_KEY }}" | base64 -d > private_key.pem
