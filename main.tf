@@ -22,7 +22,7 @@ resource "google_artifact_registry_repository" "my_repository" {
 
 # Attempt to read existing static IP
 data "google_compute_address" "existing_static_address" {
-  count  = "vm-static-ip"
+  count  = terraform.workspace == "default" ? 0 : 1
   name   = "vm-static-ip"
   region = var.region
 }
