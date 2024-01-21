@@ -53,6 +53,7 @@ resource "google_compute_instance" "vm_instance" {
   }
 }
 
+
 output "vm_external_ip" {
   value = google_compute_address.static_address.address
 }
