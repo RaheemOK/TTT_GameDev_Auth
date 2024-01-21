@@ -37,11 +37,9 @@ jobs:
     - name: Push Docker Image
       run: docker push ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.ARTIFACT_REPO_NAME }}/ttt-gamedev-auth-micro:latest
 
-    - name: Retrieve VM External IP and Set Env Var
+    - name: Capture VM External IP to File
       run: |
-        IP=$(terraform output -raw vm_external_ip | grep -oP '(\d{1,3}\.){3}\d{1,3}')
-        echo "Extracted IP: $IP" # For debugging
-        echo "VM_IP=$IP" >> $GITHUB_ENV
+        terraform output -raw vm_external_ip | grep -oP '(\d{1,3}\.){3}\d{1,3}' > vm_ip.txt
 
     - name: Decode SSH Key
       run: echo "${{ secrets.SSH_PRIVATE_KEY }}" | base64 -d > private_key.pem
@@ -51,10 +49,11 @@ jobs:
         chmod 600 private_key.pem
         echo "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
 
-
     - name: Deploy to GCE VM
       run: |
-        ssh -i private_key.pem -o StrictHostKeyChecking=no ${{ secrets.VM_USERNAME }}@${{ env.VM_IP }} "
+        IP=$(cat vm_ip.txt)
+        echo "Using VM IP: $IP" # For debugging
+        ssh -i private_key.pem -o StrictHostKeyChecking=no ${{ secrets.VM_USERNAME }}@"$IP" "
         docker stop ttt-gamedev-auth-micro || true &&
         docker rm ttt-gamedev-auth-micro || true &&
         docker pull europe-west2-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.ARTIFACT_REPO_NAME }}/ttt-gamedev-auth-micro:latest &&
