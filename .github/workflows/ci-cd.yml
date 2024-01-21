@@ -37,11 +37,17 @@ jobs:
     - name: Push Docker Image
       run: docker push ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.ARTIFACT_REPO_NAME }}/ttt-gamedev-auth-micro:latest
 
+    - name: Debug Terraform Output
+      run: |
+        RAW_OUTPUT=$(terraform output -raw vm_external_ip)
+        echo "Raw Output: $RAW_OUTPUT" # For debugging
+        echo "Processed Output: $(echo $RAW_OUTPUT | tr -d '\n')" # For debugging
+
     - name: Retrieve VM External IP and Set Env Var
       run: |
-        IP=$(terraform output -raw vm_external_ip | grep -oP '(\d{1,3}\.){3}\d{1,3}')
+        IP=$(terraform output -raw vm_external_ip)
+        echo "Extracted IP: $IP" # For debugging
         echo "VM_IP=$IP" >> $GITHUB_ENV
-        cat $GITHUB_ENV # For debugging
 
     - name: Decode SSH Key
       run: echo "${{ secrets.SSH_PRIVATE_KEY }}" | base64 -d > private_key.pem
