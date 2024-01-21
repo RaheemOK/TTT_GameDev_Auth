@@ -71,10 +71,12 @@ jobs:
           set -x  # Enable debugging
           IP=$(cat vm_ip.txt)
           echo "Using VM IP: $IP"
+          echo "SSH command: scp -i id_rsa_ttt_gda_micro -o StrictHostKeyChecking=no service_account_key.json raheem@$IP:~/"
+          scp -i id_rsa_ttt_gda_micro -o StrictHostKeyChecking=no service_account_key.json raheem@$IP:~/
           echo "SSH command: ssh -i id_rsa_ttt_gda_micro -o StrictHostKeyChecking=no raheem@$IP"
           ssh -i id_rsa_ttt_gda_micro -o StrictHostKeyChecking=no raheem@$IP <<EOF
           echo "Inside VM"
-          cat service_account_key.json | docker login -u _json_key --password-stdin https://***-docker.pkg.dev
+          cat ~/service_account_key.json | docker login -u _json_key --password-stdin https://***-docker.pkg.dev
           docker stop ttt-gamedev-auth-micro || true &&
           docker rm ttt-gamedev-auth-micro || true &&
           docker pull europe-west2-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.ARTIFACT_REPO_NAME }}/ttt-gamedev-auth-micro:latest &&
