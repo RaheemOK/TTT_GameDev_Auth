@@ -33,4 +33,13 @@ resource "google_compute_instance" "vm_instance" {
       nat_ip = google_compute_address.static_address.address
     }
   }
+
+  metadata = {
+    "ssh-keys" = "raheem:${file("keygen.pub")}"
+  }
+
+}
+
+output "vm_external_ip" {
+  value = google_compute_address.static_address.address
 }

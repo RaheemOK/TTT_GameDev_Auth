@@ -8,7 +8,6 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v2
@@ -37,3 +36,25 @@ jobs:
 
     - name: Push Docker Image
       run: docker push ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.ARTIFACT_REPO_NAME }}/ttt-gamedev-auth-micro:latest
+
+    - name: Retrieve VM External IP
+      id: get_vm_ip
+      run: echo "VM_IP=$(terraform output -raw vm_external_ip)" >> $GITHUB_ENV
+
+    - name: Decode SSH Key
+      run: echo "${{ secrets.SSH_PRIVATE_KEY }}" | base64 -d > private_key.pem
+
+    - name: Set up SSH Permissions
+      run: |
+        chmod 600 private_key.pem
+        echo "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+
+    - name: Deploy to GCE VM
+      run: |
+        ssh -i private_key.pem -o StrictHostKeyChecking=no ${{ secrets.VM_USERNAME }}@${{ env.VM_IP }} "
+        docker stop ttt-gamedev-auth-micro || true &&
+        docker rm ttt-gamedev-auth-micro || true &&
+        docker pull europe-west2-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.ARTIFACT_REPO_NAME }}/ttt-gamedev-auth-micro:latest &&
+        docker run -d -p 8080:8080 --name ttt-gamedev-auth-micro europe-west2-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/my-repo/ttt-gamedev-auth-micro:latest"
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
