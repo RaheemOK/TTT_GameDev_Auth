@@ -30,9 +30,13 @@ jobs:
       - name: Apply Terraform
         id: apply
         run: |
-          output=$(terraform apply -auto-approve -var "project=${{ secrets.GCP_PROJECT_ID }}" -var "region=${{ secrets.GCP_REGION }}" -var "repository_id=${{ secrets.ARTIFACT_REPO_NAME }}" -var "zone=${{ secrets.GCP_ZONE }}" | tee)
-          echo "$output"
-          service_account_key=$(echo "$output" | grep 'artifact_registry_service_account_key =' | cut -d' ' -f3)
+          terraform apply -auto-approve -var "project=${{ secrets.GCP_PROJECT_ID }}" -var "region=${{ secrets.GCP_REGION }}" -var "repository_id=${{ secrets.ARTIFACT_REPO_NAME }}" -var "zone=${{ secrets.GCP_ZONE }}"
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/gcp-credentials.json
+
+      - name: Get Artifact Registry Service Account Key
+        run: |
+          service_account_key=$(terraform output -raw artifact_registry_service_account_key)
           echo "SERVICE_ACCOUNT_KEY=$service_account_key" >> $GITHUB_ENV
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/gcp-credentials.json
