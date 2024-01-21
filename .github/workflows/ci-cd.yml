@@ -53,6 +53,8 @@ jobs:
       - name: Capture VM External IP to File
         run: |
           terraform output -raw vm_external_ip | grep -oP '(\d{1,3}\.){3}\d{1,3}' > vm_ip.txt
+          IP=$(head -n 1 vm_ip.txt)  # Extract only the first line which should be the IP
+          echo "$IP" > vm_ip.txt  # Overwrite vm_ip.txt with just the single IP
 
       - name: Decode SSH Key
         run: echo "${{ secrets.SSH_PRIVATE_KEY }}" | base64 -d > id_rsa_ttt_gda_micro
@@ -70,7 +72,7 @@ jobs:
           set -x  # Enable debugging
           echo "Contents of vm_ip.txt:"
           cat vm_ip.txt
-          IP=$(cat vm_ip.txt | tr -d '\n')
+          IP=$(cat vm_ip.txt)
           echo "Using VM IP: $IP"
           echo "SSH command: ssh -i id_rsa_ttt_gda_micro -o StrictHostKeyChecking=no raheem@$IP"
           ssh -i id_rsa_ttt_gda_micro -o StrictHostKeyChecking=no raheem@$IP <<EOF
