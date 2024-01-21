@@ -36,10 +36,14 @@ jobs:
 
       - name: Get Artifact Registry Service Account Key
         run: |
-          service_account_key=$(terraform output -raw artifact_registry_service_account_key)
-          echo "SERVICE_ACCOUNT_KEY=$service_account_key" >> $GITHUB_ENV
+          terraform output -raw artifact_registry_service_account_key > service_account_key.json
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/gcp-credentials.json
+
+      - name: Set SERVICE_ACCOUNT_KEY Environment Variable
+        run: |
+          service_account_key=$(cat service_account_key.json)
+          echo "SERVICE_ACCOUNT_KEY=$service_account_key" >> $GITHUB_ENV
 
       - name: Build Docker Image
         run: docker build --platform linux/amd64 --no-cache -t ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.ARTIFACT_REPO_NAME }}/ttt-gamedev-auth-micro:latest .
