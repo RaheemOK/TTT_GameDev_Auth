@@ -42,24 +42,24 @@ jobs:
         terraform output -raw vm_external_ip | grep -oP '(\d{1,3}\.){3}\d{1,3}' > vm_ip.txt
 
     - name: Decode SSH Key
-      run: echo "${{ secrets.SSH_PRIVATE_KEY }}" | base64 -d > private_key.pem
+      run: echo "${{ secrets.SSH_PRIVATE_KEY }}" | base64 -d > id_rsa_ttt_gda_micro
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
     - name: Set up SSH Permissions
       run: |
-        mkdir -p ~/.ssh  # Create .ssh directory if it doesn't exist
-        chmod 600 private_key.pem
+        mkdir -p ~/.ssh
+        chmod 600 id_rsa_ttt_gda_micro
         echo "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
 
     - name: Deploy to GCE VM
       run: |
         IP=$(cat vm_ip.txt)
-        echo "Using VM IP: $IP" # For debugging
-        chmod 600 private_key.pem
-        ssh -T -i private_key.pem -vvv -o StrictHostKeyChecking=no raheem@35.197.251.94 << EOF
+        echo "Using VM IP: $IP"
+        ssh -i id_rsa_ttt_gda_micro -o StrictHostKeyChecking=no raheem@"$IP" << EOF
         docker stop ttt-gamedev-auth-micro || true &&
         docker rm ttt-gamedev-auth-micro || true &&
         docker pull europe-west2-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.ARTIFACT_REPO_NAME }}/ttt-gamedev-auth-micro:latest &&
         docker run -d -p 8080:8080 --name ttt-gamedev-auth-micro europe-west2-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.ARTIFACT_REPO_NAME }}/ttt-gamedev-auth-micro:latest
         EOF
-      env:
-        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+§
