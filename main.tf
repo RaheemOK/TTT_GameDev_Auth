@@ -3,7 +3,6 @@ provider "google" {
   region  = var.region
 }
 
-# Check if the Artifact Registry repository exists
 resource "google_artifact_registry_repository" "my_repository" {
   provider     = google
   location     = var.region
@@ -11,24 +10,28 @@ resource "google_artifact_registry_repository" "my_repository" {
   format       = "DOCKER"
 }
 
+# Check if the static IP exists
 data "google_compute_address" "existing_static_address" {
   name   = "vm-static-ip"
   region = var.region
 }
 
+# Create static IP if it doesn't exist
 resource "google_compute_address" "static_address" {
-  count  = length(data.google_compute_address.existing_static_address.*.id) > 0 ? 0 : 1
+  count  = data.google_compute_address.existing_static_address.id == "" ? 1 : 0
   name   = "vm-static-ip"
   region = var.region
 }
 
+# Check if the VM exists
 data "google_compute_instance" "existing_vm" {
   name   = "ttt-gamedev-auth-micro-e2"
   zone   = var.zone
 }
 
+# Create VM if it doesn't exist
 resource "google_compute_instance" "vm_instance" {
-  count        = length(data.google_compute_instance.existing_vm.*.id) > 0 ? 0 : 1
+  count        = data.google_compute_instance.existing_vm.id == "" ? 1 : 0
   name         = "ttt-gamedev-auth-micro-e2"
   machine_type = "e2-micro"
   zone         = var.zone
@@ -42,7 +45,7 @@ resource "google_compute_instance" "vm_instance" {
   network_interface {
     network = "default"
     access_config {
-      nat_ip = length(data.google_compute_address.existing_static_address.*.id) > 0 ? data.google_compute_address.existing_static_address.address : google_compute_address.static_address[0].address
+      nat_ip = data.google_compute_address.existing_static_address.id != "" ? data.google_compute_address.existing_static_address.address : google_compute_address.static_address[0].address
     }
   }
 
@@ -56,7 +59,6 @@ resource "google_compute_instance" "vm_instance" {
   }
 }
 
-
 output "vm_external_ip" {
-  value = length(data.google_compute_address.existing_static_address.*.id) > 0 ? data.google_compute_address.existing_static_address.address : google_compute_address.static_address[0].address
+  value = data.google_compute_address.existing_static_address.id != "" ? data.google_compute_address.existing_static_address.address : google_compute_address.static_address[0].address
 }
