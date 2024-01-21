@@ -66,3 +66,14 @@ resource "google_compute_instance" "vm_instance" {
 output "vm_external_ip" {
   value = google_compute_address.static_address.address
 }
+
+resource "google_service_account" "artifact_service_account" {
+  account_id   = "artifact-admin-sa"
+  display_name = "Artifact Registry Admin Service Account"
+}
+
+resource "google_project_iam_member" "artifact_sa_role" {
+  project = var.project
+  role    = "roles/artifactregistry.admin"
+  member  = "serviceAccount:${google_service_account.artifact_service_account.email}"
+}
