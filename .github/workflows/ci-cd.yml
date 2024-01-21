@@ -68,6 +68,7 @@ jobs:
           chmod 600 id_rsa_ttt_gda_micro
           echo "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
 
+
       - name: Deploy to GCE VM
         run: |
           set -x  # Enable debugging
@@ -78,9 +79,12 @@ jobs:
           echo "SSH command: ssh -i id_rsa_ttt_gda_micro -o StrictHostKeyChecking=no raheem@$IP"
           ssh -i id_rsa_ttt_gda_micro -o StrictHostKeyChecking=no raheem@$IP <<EOF
           echo "Inside VM"
+          echo "$SERVICE_ACCOUNT_KEY" | docker login -u _json_key --password-stdin https://***-docker.pkg.dev
           docker stop ttt-gamedev-auth-micro || true &&
           docker rm ttt-gamedev-auth-micro || true &&
           docker pull europe-west2-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.ARTIFACT_REPO_NAME }}/ttt-gamedev-auth-micro:latest &&
           docker run -d -p 8080:8080 --name ttt-gamedev-auth-micro europe-west2-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.ARTIFACT_REPO_NAME }}/ttt-gamedev-auth-micro:latest
           EOF
           set +x  # Disable debugging
+        env:
+          SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
