@@ -58,7 +58,7 @@ resource "google_compute_instance" "vm_instance" {
   network_interface {
     network = "default"
     access_config {
-      nat_ip = length(data.google_compute_address.existing_static_address.*.name) > 0 ? data.google_compute_address.existing_static_address.address : google_compute_address.static_address[0].address
+      nat_ip = length(data.google_compute_address.existing_static_address.*.name) > 0 ? data.google_compute_address.existing_static_address[0].address : google_compute_address.static_address[0].address
     }
   }
 
@@ -68,5 +68,5 @@ resource "google_compute_instance" "vm_instance" {
 }
 
 output "vm_external_ip" {
-  value = length(data.google_compute_address.existing_static_address.*.name) > 0 ? data.google_compute_address.existing_static_address.address : google_compute_address.static_address[0].address
+  value = length(data.google_compute_address.existing_static_address.*.name) > 0 ? data.google_compute_address.existing_static_address[0].address : google_compute_address.static_address[0].address
 }
