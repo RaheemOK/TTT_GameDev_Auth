@@ -70,7 +70,7 @@ jobs:
           set -x  # Enable debugging
           echo "Contents of vm_ip.txt:"
           cat vm_ip.txt
-          IP=$(cat vm_ip.txt)
+          IP=$(cat vm_ip.txt | tr -d '\n')
           echo "Using VM IP: $IP"
           echo "SSH command: ssh -i id_rsa_ttt_gda_micro -o StrictHostKeyChecking=no raheem@$IP"
           ssh -i id_rsa_ttt_gda_micro -o StrictHostKeyChecking=no raheem@$IP <<EOF
