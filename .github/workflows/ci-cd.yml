@@ -46,8 +46,9 @@ jobs:
 
     - name: Set up SSH Permissions
       run: |
-        chmod 600 private_key.pem
-        echo "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+          mkdir -p ~/.ssh  # Create .ssh directory if it doesn't exist
+          chmod 600 private_key.pem
+          echo "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
 
     - name: Deploy to GCE VM
       run: |
