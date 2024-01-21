@@ -40,6 +40,15 @@ resource "google_compute_instance" "vm_instance" {
       apt-get install -y docker.io
     EOT
   }
+
+  network_interface {
+    network = "default"
+
+    access_config {
+      // Associate the static IP address with the VM
+      nat_ip = google_compute_address.static_address.address
+    }
+  }
 }
 
 output "vm_external_ip" {
