@@ -11,19 +11,17 @@ resource "google_artifact_registry_repository" "my_repository" {
   format       = "DOCKER"
 }
 
-# Create the static IP address if it does not exist
-resource "google_compute_address" "static_address" {
+data "google_compute_address" "existing_static_address" {
   name   = "vm-static-ip"
   region = var.region
-  lifecycle {
-    create_before_destroy = true
-    ignore_changes = [
-      address
-    ]
-  }
 }
 
-# Create the VM instance if it does not exist
+resource "google_compute_address" "static_address" {
+  count  = length(data.google_compute_address.existing_static_address.*.id) > 0 ? 0 : 1
+  name   = "vm-static-ip"
+  region = var.region
+}
+
 resource "google_compute_instance" "vm_instance" {
   name         = "ttt-gamedev-auth-micro-e2"
   machine_type = "e2-micro"
@@ -38,7 +36,7 @@ resource "google_compute_instance" "vm_instance" {
   network_interface {
     network = "default"
     access_config {
-      nat_ip = google_compute_address.static_address.address
+      nat_ip = length(data.google_compute_address.existing_static_address.*.id) > 0 ? data.google_compute_address.existing_static_address.address : google_compute_address.static_address[0].address
     }
   }
 
@@ -48,5 +46,5 @@ resource "google_compute_instance" "vm_instance" {
 }
 
 output "vm_external_ip" {
-  value = google_compute_address.static_address.address
+  value = length(data.google_compute_address.existing_static_address.*.id) > 0 ? data.google_compute_address.existing_static_address.address : google_compute_address.static_address[0].address
 }
