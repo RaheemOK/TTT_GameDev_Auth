@@ -36,8 +36,14 @@ jobs:
         run: |
           terraform output -raw vm_external_ip > vm_external_ip.txt
 
+      # Install jq for JSON processing
+      - name: Install jq
+        run: sudo apt-get install jq
+
+      # Capture the Artifact Registry Service Account Key to File
       - name: Capture Artifact Registry Service Account Key to File
-        run: terraform output -raw artifact_registry_service_account_key > artifact_key.txt
+        run: |
+          terraform output -json | jq -r '.artifact_registry_service_account_key.value.key' > artifact_key.txt
 
       # Optional: Debugging step to print the entire Terraform JSON output
       # - name: Debug Terraform JSON Output
