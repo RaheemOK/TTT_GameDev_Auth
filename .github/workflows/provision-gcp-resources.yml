@@ -1,9 +1,7 @@
 name: Provisioning Resources CI
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -32,17 +30,3 @@ jobs:
           terraform apply -auto-approve -var "project=${{ secrets.GCP_PROJECT_ID }}" -var "region=${{ secrets.GCP_REGION }}" -var "repository_id=${{ secrets.ARTIFACT_REPO_NAME }}" -var "zone=${{ secrets.GCP_ZONE }}"
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/gcp-credentials.json
-
-      - name: Install jq
-        run: sudo apt-get install jq
-
-      - name: Extract Artifact Registry Service Account Key
-        run: |
-          JSON_KEY=$(terraform output -json artifact_registry_service_account_key | jq -r '.value.key')
-          echo "ARTIFACT_REGISTRY_SERVICE_ACCOUNT_KEY=$JSON_KEY" >> $GITHUB_ENV
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/gcp-credentials.json
-
-      - name: Capture VM External IP to File
-        run: |
-          terraform output -raw vm_external_ip > vm_ip.txt
