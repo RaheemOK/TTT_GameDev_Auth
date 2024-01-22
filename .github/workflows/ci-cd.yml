@@ -41,8 +41,9 @@ jobs:
       - name: Output Terraform JSON to File
         run: terraform output -json > output.json
 
-      - name: Extract Key Using jq
-        run: cat output.json | jq -r '.artifact_registry_service_account_key.value.key' > artifact_key.txt
+      - name: Extract and Decode Key Using jq
+        run: |
+          cat output.json | jq -r '.artifact_registry_service_account_key.value.key' | base64 -d > artifact_key.txt
 
       - name: Store Files in Workspace
         run: |
