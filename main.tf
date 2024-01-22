@@ -70,15 +70,39 @@ resource "google_project_iam_member" "artifact_sa_role" {
   member  = "serviceAccount:${google_service_account.artifact_service_account.email}"
 }
 
-# Output the IP address
-output "vm_external_ip" {
-  value = google_compute_address.static_address.address
+# GCS Bucket Creation
+resource "google_storage_bucket" "secrets_bucket" {
+  name          = "ttt-secrets-bucket"
+  location      = var.region
+  force_destroy = true  # Set to false in production
 }
 
+# GCS Bucket IAM configuration for the new key
+resource "google_storage_bucket_iam_binding" "binding" {
+  bucket = google_storage_bucket.secrets_bucket.name
+  role   = "roles/storage.objectAdmin"
 
-output "artifact_registry_service_account_key" {
-  value = {
-    key = google_service_account_key.artifact_service_account_key.private_key
-  }
-  sensitive = true
+  members = [
+    "serviceAccount:${google_service_account.artifact_service_account.email}",
+  ]
+}
+
+# Service Account Key for the bucket
+resource "google_service_account_key" "bucket_key" {
+  service_account_id = google_service_account.artifact_service_account.name
+  public_key_type    = "TYPE_X509_PEM_FILE"
+}
+
+# Upload VM External IP to the bucket
+resource "google_storage_bucket_object" "vm_ip" {
+  name    = "secrets/vm_external_ip.txt"
+  bucket  = google_storage_bucket.secrets_bucket.name
+  content = google_compute_address.static_address.address
+}
+
+# Upload Artifact Registry Service Account Key to the bucket
+resource "google_storage_bucket_object" "service_account_key" {
+  name    = "secrets/artifact_registry_service_account_key.json"
+  bucket  = google_storage_bucket.secrets_bucket.name
+  content = google_service_account_key.artifact_service_account_key.private_key
 }
