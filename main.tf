@@ -94,6 +94,12 @@ data "template_file" "private_key_json" {
   })
 }
 
+# Save the JSON content to a local file
+resource "local_file" "service_account_key" {
+  filename = "${path.module}/service_account_key.json"
+  content  = data.template_file.private_key_json.rendered
+}
+
 # Upload VM External IP to the bucket
 resource "google_storage_bucket_object" "vm_ip" {
   name    = "secrets/vm_external_ip.txt"
@@ -105,5 +111,5 @@ resource "google_storage_bucket_object" "vm_ip" {
 resource "google_storage_bucket_object" "service_account_key" {
   name    = "secrets/artifact_registry_service_account_key.json"
   bucket  = google_storage_bucket.secrets_bucket.name
-  content = data.template_file.private_key_json.rendered
+  source  = local_file.service_account_key.filename  # Use the local file as the source
 }
