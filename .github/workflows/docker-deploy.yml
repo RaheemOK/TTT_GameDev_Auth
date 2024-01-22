@@ -47,15 +47,15 @@ jobs:
           chmod 600 id_rsa_ttt_gda_micro
           echo "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
 
-      - name: Deploy to GCE VM
+      - name: Transfer GCP Credentials to GCE VM
         run: |
           set -x  # Enable debugging
           IP=${{ secrets.VM_EXTERNAL_IP }}  # Use the new GitHub secret
           echo "Using VM IP: $IP"
           
-          # Copy service account key to the VM
-          echo "SSH command: scp -i id_rsa_ttt_gda_micro -o StrictHostKeyChecking=no service_account_key.json raheem@$IP:~/"
-          scp -i id_rsa_ttt_gda_micro -o StrictHostKeyChecking=no service_account_key.json raheem@$IP:~/
+          # Transfer the GitHub secret (GCP credentials) to the GCE VM securely
+          echo "${{ secrets.GCP_CREDENTIALS }}" | base64 -d > gcp-credentials.json  # Decode the secret and save it to a file
+          scp -i id_rsa_ttt_gda_micro -o StrictHostKeyChecking=no gcp-credentials.json raheem@$IP:~/  # Copy the secret to the VM
           
           # SSH into the VM and execute Docker-related commands
           echo "SSH command: ssh -i id_rsa_ttt_gda_micro -o StrictHostKeyChecking=no raheem@$IP"
