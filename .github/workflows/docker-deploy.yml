@@ -47,32 +47,33 @@ jobs:
           chmod 600 id_rsa_ttt_gda_micro
           echo "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
 
-      - name: Transfer GCP Credentials to GCE VM
+      - name: Deploy to GCE VM
         run: |
           set -x  # Enable debugging
           IP=${{ secrets.VM_EXTERNAL_IP }}  # Use the new GitHub secret
           echo "Using VM IP: $IP"
-          
-          # Transfer the GitHub secret (GCP credentials) to the GCE VM securely
-          echo "${{ secrets.GCP_CREDENTIALS }}" | base64 -d > gcp-credentials.json  # Decode the secret and save it to a file
-          scp -i id_rsa_ttt_gda_micro -o StrictHostKeyChecking=no gcp-credentials.json raheem@$IP:~/  # Copy the secret to the VM
-          
+
+          # Copy GCP credentials to the VM
+          echo "SSH command: scp -i id_rsa_ttt_gda_micro -o StrictHostKeyChecking=no gcp-credentials.json raheem@$IP:~/"
+          scp -i id_rsa_ttt_gda_micro -o StrictHostKeyChecking=no gcp-credentials.json raheem@$IP:~/
+
           # SSH into the VM and execute Docker-related commands
           echo "SSH command: ssh -i id_rsa_ttt_gda_micro -o StrictHostKeyChecking=no raheem@$IP"
           ssh -i id_rsa_ttt_gda_micro -o StrictHostKeyChecking=no raheem@$IP <<EOF
           echo "Inside VM"
-          
-          # Log in to Docker with service account key
-          cat ~/service_account_key.json | docker login -u _json_key --password-stdin https://***-docker.pkg.dev  # Replace *** with your details
-          
+
+          # Log in to Docker with GCP credentials
+          cat ~/gcp-credentials.json | docker login -u _json_key --password-stdin https://***-docker.pkg.dev  # Replace *** with your details
+
           # Stop and remove any existing Docker container (if exists)
           docker stop ttt-gamedev-auth-micro || true
           docker rm ttt-gamedev-auth-micro || true
-          
+
           # Pull the latest Docker image
           docker pull europe-west2-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.ARTIFACT_REPO_NAME }}/ttt-gamedev-auth-micro:latest
-          
+
           # Run the Docker container in detached mode
           docker run -d -p 8080:8080 --name ttt-gamedev-auth-micro europe-west2-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.ARTIFACT_REPO_NAME }}/ttt-gamedev-auth-micro:latest
           EOF
           set +x  # Disable debugging
+      
