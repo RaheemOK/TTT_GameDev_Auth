@@ -75,3 +75,7 @@ resource "google_project_iam_member" "artifact_sa_role" {
 }
 
 # Output the Service Account Key
+output "artifact_registry_service_account_key" {
+  value = base64decode(google_service_account_key.artifact_service_account_key.private_key)
+  sensitive = true
+}

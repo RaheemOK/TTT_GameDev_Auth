@@ -36,7 +36,6 @@ jobs:
 
       - name: Debug Terraform Output
         run: |
-          terraform refresh
           terraform output
           JSON_KEY=$(terraform output -raw artifact_registry_service_account_key)
           echo "$JSON_KEY" > service_account_key.json
