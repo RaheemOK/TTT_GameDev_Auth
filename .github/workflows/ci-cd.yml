@@ -38,7 +38,7 @@ jobs:
         run: |
           terraform output
           JSON_KEY=$(terraform output -raw artifact_registry_service_account_key)
-          echo "::set-env name=ARTIFACT_REGISTRY_SERVICE_ACCOUNT_KEY::$JSON_KEY"  # Set as an environment variable
+          echo "ARTIFACT_REGISTRY_SERVICE_ACCOUNT_KEY=$JSON_KEY" >> $GITHUB_ENV  # Set as an environment variable
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/gcp-credentials.json
 
