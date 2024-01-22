@@ -45,7 +45,7 @@ jobs:
 
       - name: Capture Artifact Registry Service Account Key to File
         run: |
-          terraform output -json | jq -r '.artifact_registry_service_account_key | .key' > artifact_key.txt
+          terraform output -json | jq -r '.artifact_registry_service_account_key.value.key' > artifact_key.txt
 
       # Optional: Debugging step to print the entire Terraform JSON output
       # - name: Debug Terraform JSON Output
