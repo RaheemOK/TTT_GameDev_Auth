@@ -32,29 +32,18 @@ jobs:
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/gcp-credentials.json
 
-      - name: Output VM External IP
-        id: vm_ip
-        run: echo "::set-output name=vm_ip::$(terraform output -raw vm_external_ip)"
-
       - name: Capture VM External IP to File
         run: |
           terraform output -raw vm_external_ip > vm_external_ip.txt
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/gcp-credentials.json
 
-      - name: Upload VM External IP as an Artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: vm-external-ip
-          path: vm_external_ip.txt
-
-      - name: Extract and Save Artifact Registry Service Account Key
+      - name: Capture Artifact Registry Service Account Key to File
         run: |
-          terraform output -json artifact_registry_service_account_key | jq -r '.key' > artifact_key.txt
-        shell: /usr/bin/bash -e {0}
+          terraform output -raw artifact_registry_service_account_key > artifact_key.txt
 
-      - name: Upload Artifact Registry Service Account Key as an Artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: artifact-registry-key
-          path: artifact_key.txt
+      # Optional: Encrypt the files here if needed
+
+      - name: Store Files in Workspace
+        run: |
+          mkdir -p ${{ github.workspace }}/secrets
+          mv vm_external_ip.txt ${{ github.workspace }}/secrets/
+          mv artifact_key.txt ${{ github.workspace }}/secrets/
