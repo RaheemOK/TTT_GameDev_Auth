@@ -40,6 +40,7 @@ jobs:
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/gcp-credentials.json
 
+
       - name: Build Docker Image
         run: docker build --platform linux/amd64 --no-cache -t ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.ARTIFACT_REPO_NAME }}/ttt-gamedev-auth-micro:latest .
 
