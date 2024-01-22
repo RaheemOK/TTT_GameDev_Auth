@@ -90,11 +90,11 @@ resource "google_storage_bucket_iam_binding" "binding" {
 # Generate JSON content for the private key
 data "template_file" "private_key_json" {
   template = jsonencode({
-    private_key = google_service_account_key.artifact_service_account_key.private_key
+    private_key = file("${path.module}/artifact_registry_service_account_key.json")  # Path to the decoded JSON file
   })
 }
 
-# Save the JSON content to a local file
+# Save the JSON content to a local file (optional)
 resource "local_file" "service_account_key" {
   filename = "${path.module}/service_account_key.json"
   content  = data.template_file.private_key_json.rendered
