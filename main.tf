@@ -60,7 +60,7 @@ resource "google_service_account" "artifact_service_account" {
 # Service Account Key Generation
 resource "google_service_account_key" "artifact_service_account_key" {
   service_account_id = google_service_account.artifact_service_account.name
-  public_key_type    = "TYPE_X509_PEM_FILE"
+  public_key_type    = "TYPE_JSON"
 }
 
 # Assigning Role
@@ -103,9 +103,7 @@ resource "google_storage_bucket_object" "vm_ip" {
 resource "google_storage_bucket_object" "service_account_key" {
   name   = "secrets/artifact_registry_service_account_key.json"
   bucket = google_storage_bucket.secrets_bucket.name
-  content = <<EOT
-{
-  "private_key": "${base64encode(google_service_account_key.artifact_service_account_key.private_key)}"
-}
-EOT
+  content = jsonencode({
+    private_key = google_service_account_key.artifact_service_account_key.private_key
+  })
 }
