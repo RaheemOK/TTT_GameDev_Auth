@@ -45,6 +45,11 @@ jobs:
         run: |
           cat output.json | jq -r '.artifact_registry_service_account_key.value.key' | base64 -d > artifact_key.txt
 
+      - name: Extract Key and Print to Console (Debugging)
+        run: |
+          cat output.json | jq -r '.artifact_registry_service_account_key.value.key'
+
+
       - name: Store Files in Workspace
         run: |
           mkdir -p ${{ github.workspace }}/secrets
