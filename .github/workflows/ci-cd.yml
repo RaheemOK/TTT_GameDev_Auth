@@ -54,7 +54,8 @@ jobs:
 
       - name: Get Artifact Registry Service Account Key
         run: |
-          terraform output -raw artifact_registry_service_account_key > service_account_key.json
+          JSON_KEY=$(terraform output -raw artifact_registry_service_account_key)
+          echo "$JSON_KEY" > service_account_key.json
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/gcp-credentials.json
 
