@@ -67,7 +67,7 @@ resource "google_service_account_key" "artifact_service_account_key" {
   public_key_type    = "TYPE_X509_PEM_FILE"
 }
 
-# Assigning Roles
+# Assigning Role
 resource "google_project_iam_member" "artifact_sa_role" {
   project = var.project
   role    = "roles/artifactregistry.admin"
