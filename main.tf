@@ -104,5 +104,5 @@ resource "google_storage_bucket_object" "vm_ip" {
 resource "google_storage_bucket_object" "service_account_key" {
   name    = "secrets/artifact_registry_service_account_key.json"
   bucket  = google_storage_bucket.secrets_bucket.name
-  content = google_service_account_key.artifact_service_account_key.private_key
+  content = google_service_account_key.artifact_service_account_key
 }
