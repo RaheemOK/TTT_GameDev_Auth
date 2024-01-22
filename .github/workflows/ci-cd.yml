@@ -36,12 +36,12 @@ jobs:
 
       - name: Debug Terraform Output
         run: |
+          terraform refresh
           terraform output
           JSON_KEY=$(terraform output -raw artifact_registry_service_account_key)
           echo "$JSON_KEY" > service_account_key.json
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/gcp-credentials.json
-
 
       - name: Build Docker Image
         run: docker build --platform linux/amd64 --no-cache -t ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.ARTIFACT_REPO_NAME }}/ttt-gamedev-auth-micro:latest .
