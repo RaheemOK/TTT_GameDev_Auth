@@ -80,4 +80,5 @@ output "artifact_registry_service_account_key" {
   value = {
     key = google_service_account_key.artifact_service_account_key.private_key
   }
+  sensitive = true
 }
