@@ -75,8 +75,9 @@ output "vm_external_ip" {
   value = google_compute_address.static_address.address
 }
 
-# Output the Artifact Access Key
+
 output "artifact_registry_service_account_key" {
-  value     = google_service_account_key.artifact_service_account_key.private_key
-  sensitive = true
+  value = {
+    key = google_service_account_key.artifact_service_account_key.private_key
+  }
 }

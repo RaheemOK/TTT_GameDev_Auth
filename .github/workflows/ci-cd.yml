@@ -48,12 +48,10 @@ jobs:
           name: vm-external-ip
           path: vm_external_ip.txt
 
-      - name: Capture and Upload Artifact Registry Service Account Key
+      - name: Extract and Save Artifact Registry Service Account Key
         run: |
-          terraform output -raw artifact_registry_service_account_key > artifact_key.txt
-          cat artifact_key.txt  # Display the content of the artifact_key.txt file
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/gcp-credentials.json
+          terraform output -json artifact_registry_service_account_key | jq -r '.key' > artifact_key.txt
+        shell: /usr/bin/bash -e {0}
 
       - name: Upload Artifact Registry Service Account Key as an Artifact
         uses: actions/upload-artifact@v2
