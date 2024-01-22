@@ -33,26 +33,17 @@ jobs:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/gcp-credentials.json
 
       - name: Capture VM External IP to File
-        run: |
-          terraform output -raw vm_external_ip > vm_external_ip.txt
+        run: terraform output -raw vm_external_ip > vm_external_ip.txt
 
-      # Install jq for JSON processing
       - name: Install jq
         run: sudo apt-get install jq
 
-      - name: Debug Terraform JSON Output
-        run: terraform output -json
+      - name: Output Terraform JSON to File
+        run: terraform output -json > output.json
 
-      - name: Capture Artifact Registry Service Account Key to File
-        run: |
-          terraform output -json | jq -r '.artifact_registry_service_account_key.value.key' > artifact_key.txt
+      - name: Extract Key Using jq
+        run: cat output.json | jq -r '.artifact_registry_service_account_key.value.key' > artifact_key.txt
 
-      # Optional: Debugging step to print the entire Terraform JSON output
-      # - name: Debug Terraform JSON Output
-      #   run: |
-      #     terraform output -json
-
-      # Store the IP and key in the GitHub workspace
       - name: Store Files in Workspace
         run: |
           mkdir -p ${{ github.workspace }}/secrets
