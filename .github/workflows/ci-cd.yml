@@ -36,10 +36,6 @@ jobs:
         id: vm_ip
         run: echo "::set-output name=vm_ip::$(terraform output -raw vm_external_ip)"
 
-      - name: Output Artifact Registry Service Account Key
-        id: artifact_key
-        run: echo "::set-output name=artifact_key::$(terraform output -raw artifact_registry_service_account_key)"
-
       - name: Capture VM External IP to File
         run: |
           terraform output -raw vm_external_ip > vm_external_ip.txt
@@ -52,14 +48,14 @@ jobs:
           name: vm-external-ip
           path: vm_external_ip.txt
 
-      - name: Get Artifact Registry Service Account Key
-        run: |
-          terraform output -raw artifact_registry_service_account_key > service_account_key.json
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/gcp-credentials.json
 
-      - name: Upload Artifact Registry Key as an Artifact
+      - name: Output Artifact Registry Service Account Key
+        id: artifact_key
+        run: echo "$(terraform output -raw artifact_registry_service_account_key)" > artifact_key.txt
+
+      - name: Upload Artifact Registry Service Account Key as an Artifact
         uses: actions/upload-artifact@v2
         with:
           name: artifact-registry-key
-          path: service_account_key.json
+          path: artifact_key.txt
+
