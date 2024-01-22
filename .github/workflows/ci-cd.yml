@@ -50,3 +50,11 @@ jobs:
           mkdir -p ${{ github.workspace }}/secrets
           mv vm_external_ip.txt ${{ github.workspace }}/secrets/
           mv artifact_key.txt ${{ github.workspace }}/secrets/
+
+      - name: Upload IP and Key as a Combined Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: provisioned-secrets
+          path: |
+            ${{ github.workspace }}/secrets/vm_external_ip.txt
+            ${{ github.workspace }}/secrets/artifact_key.txt
