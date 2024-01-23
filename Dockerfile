@@ -23,7 +23,7 @@ COPY . /app/
 
 # Set environment variables for your Django project
 ENV DJANGO_DEBUG=False
-ENV DJANGO_SETTINGS_MODULE your_project_name.settings
+ENV DJANGO_SETTINGS_MODULE TTT_GameDev_Auth.settings
 
 # Expose the port that your application will listen on (if needed)
 # EXPOSE 8001
