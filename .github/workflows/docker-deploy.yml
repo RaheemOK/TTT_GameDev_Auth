@@ -45,7 +45,7 @@ jobs:
 
       - name: Create .env file
         run: |
-            echo "ALLOWED_HOSTS=${{ secrets.VM_EXTERNAL_IP }}" > .env
+            echo "ALLOWED_HOSTS='${{ secrets.VM_EXTERNAL_IP }}'" > .env
             # Add other environment variables here
 
 
