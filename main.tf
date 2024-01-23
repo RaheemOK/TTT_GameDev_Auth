@@ -22,15 +22,15 @@ resource "google_compute_address" "static_address" {
   region = var.region
 }
 
-resource "google_compute_firewall" "allow-8080" {
-  name    = "allow-8080"
-  network = "default"  # You can change the network name if needed
+resource "google_compute_firewall" "allow-8001" {
+  name    = "allow-8001"
+  network = "default"
   allow {
     protocol = "tcp"
-    ports    = ["8080"]
+    ports    = ["8001"]
   }
-  source_ranges = ["0.0.0.0/0"]  # You can restrict the source IP range if needed
-  target_tags   = ["allow-8080"]  # Match the tag from the instance
+  source_ranges = ["0.0.0.0/0"]
+  target_tags   = ["allow-8001"]
 }
 
 resource "google_compute_instance" "vm_instance" {
@@ -51,7 +51,7 @@ resource "google_compute_instance" "vm_instance" {
     }
   }
 
-  tags = ["allow-8080"]  # Add the tag for the firewall rule here
+  tags = ["allow-8001"]  # Add the tag for the firewall rule here
 
   metadata = {
     "ssh-keys" = "raheem:${file("id_rsa_ttt_gda_micro.pub")}"
