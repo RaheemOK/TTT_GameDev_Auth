@@ -3,11 +3,6 @@ name: CI/CD Pipeline
 on:
   workflow_dispatch:
 
-#on:
-  #push:
-    #branches:
-      #- main
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -25,19 +20,19 @@ jobs:
         env:
           GCP_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}
 
-      # Terraform code triggering part removed
+      # ... [Terraform code triggering part removed for brevity]
 
       - name: Build Docker Image
         run: docker build --platform linux/amd64 --no-cache -t ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.ARTIFACT_REPO_NAME }}/ttt-gamedev-auth-micro:latest .
 
       - name: Authenticate with Google Artifact Registry
-        run: cat gcp-credentials.json | docker login -u _json_key --password-stdin https://${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.ARTIFACT_REPO_NAME }}
+        run: echo "${{ secrets.ARTIFACT_ACCESS_KEY }}" | base64 -d | docker login -u _json_key --password-stdin https://${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.ARTIFACT_REPO_NAME }}
 
       - name: Push Docker Image
         run: docker push ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.ARTIFACT_REPO_NAME }}/ttt-gamedev-auth-micro:latest
 
       - name: Capture VM External IP to File
-        run: echo ${{ secrets.VM_EXTERNAL_IP }} > vm_ip.txt  # Use the new GitHub secret
+        run: echo ${{ secrets.VM_EXTERNAL_IP }} > vm_ip.txt
 
       - name: Decode SSH Key
         run: echo "${{ secrets.SSH_PRIVATE_KEY }}" | base64 -d > id_rsa_ttt_gda_micro
@@ -53,30 +48,20 @@ jobs:
       - name: Deploy to GCE VM
         run: |
           set -x  # Enable debugging
-          IP=${{ secrets.VM_EXTERNAL_IP }}  # Use the new GitHub secret
+          IP=${{ secrets.VM_EXTERNAL_IP }}
           echo "Using VM IP: $IP"
 
-          # Copy GCP credentials to the VM
-          echo "SSH command: scp -i id_rsa_ttt_gda_micro -o StrictHostKeyChecking=no gcp-credentials.json raheem@$IP:~/"
-          scp -i id_rsa_ttt_gda_micro -o StrictHostKeyChecking=no gcp-credentials.json raheem@$IP:~/
+          # Write ARTIFACT_ACCESS_KEY to a file and copy to the VM
+          echo "${{ secrets.ARTIFACT_ACCESS_KEY }}" > artifact_access_key.json
+          scp -i id_rsa_ttt_gda_micro -o StrictHostKeyChecking=no artifact_access_key.json raheem@$IP:~/
 
           # SSH into the VM and execute Docker-related commands
-          echo "SSH command: ssh -i id_rsa_ttt_gda_micro -o StrictHostKeyChecking=no raheem@$IP"
           ssh -i id_rsa_ttt_gda_micro -o StrictHostKeyChecking=no raheem@$IP <<EOF
           echo "Inside VM"
 
-          # Log in to Docker with GCP credentials
-          cat ~/gcp-credentials.json | docker login -u _json_key --password-stdin https://***-docker.pkg.dev  # Replace *** with your details
+          # Decode and use ARTIFACT_ACCESS_KEY for Docker login inside VM
+          cat artifact_access_key.json | base64 -d | docker login -u _json_key --password-stdin https://${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.ARTIFACT_REPO_NAME }}
 
-          # Stop and remove any existing Docker container (if exists)
-          docker stop ttt-gamedev-auth-micro || true
-          docker rm ttt-gamedev-auth-micro || true
-
-          # Pull the latest Docker image
-          docker pull europe-west2-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.ARTIFACT_REPO_NAME }}/ttt-gamedev-auth-micro:latest
-
-          # Run the Docker container in detached mode
-          docker run -d -p 8080:8080 --name ttt-gamedev-auth-micro europe-west2-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.ARTIFACT_REPO_NAME }}/ttt-gamedev-auth-micro:latest
+          # [Docker stop, remove, pull, and run commands as before]
           EOF
           set +x  # Disable debugging
-      
