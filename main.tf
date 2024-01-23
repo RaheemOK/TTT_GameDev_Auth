@@ -107,9 +107,9 @@ resource "google_storage_bucket_object" "vm_ip" {
   content = google_compute_address.static_address.address
 }
 
-# Upload Artifact Registry Service Account Key to the bucket
+# Upload the Artifact Registry Service Account Key to the bucket
 resource "google_storage_bucket_object" "service_account_key" {
-  name    = "secrets/artifact_registry_service_account_key.json"
-  bucket  = google_storage_bucket.secrets_bucket.name
-  source  = local_file.service_account_key.filename  # Use the local file as the source
+  name   = "secrets/artifact_registry_service_account_key.json"
+  bucket = google_storage_bucket.secrets_bucket.name
+  content = google_service_account_key.artifact_service_account_key.private_key
 }
