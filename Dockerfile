@@ -8,15 +8,18 @@ ENV PYTHONUNBUFFERED 1
 # Set work directory
 WORKDIR /app
 
-# Set execute permissions for Python
-RUN chmod +x /usr/local/bin/python
-
-# Install dependencies
-COPY requirements.txt /app/
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy project
+# Copy project files to the container
 COPY . /app/
 
-# Run the application
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8001"]
+# Install project dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Set environment variables for your Django project
+ENV DJANGO_DEBUG=False
+ENV DJANGO_SETTINGS_MODULE TTT_GameDev_Auth.settings
+
+# Expose the port that your application will listen on (if needed)
+EXPOSE 8001
+
+# Set the command to run your Django application with Gunicorn
+CMD ["gunicorn", "--bind", "0.0.0.0:8001", "your_project_name.wsgi:application"]
