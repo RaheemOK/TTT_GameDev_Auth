@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
-
+import os
 from pathlib import Path
 from datetime import timedelta
 
@@ -26,8 +26,10 @@ SECRET_KEY = 'django-insecure-v2-!70jui56&n^5*j)c=a(t!n35b*!zf7d-agi70*pui!!a@(j
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['0.0.0.0', '127.0.0.1', '34.142.8.120']
+# Define a default value for ALLOWED_HOSTS
+ALLOWED_HOSTS = [os.environ.get('VM_EXTERNAL_IP', "'0.0.0.0', '127.0.0.1'")]
 
+DEFAULT_ALLOWED_HOSTS = ['0.0.0.0', '127.0.0.1']
 
 # Application definition
 
