@@ -11,8 +11,6 @@ ARG ALLOWED_HOSTS
 # Set work directory
 WORKDIR /app
 
-COPY .env /app/.env
-
 # Set execute permissions for Python
 RUN chmod +x /usr/local/bin/python
 
