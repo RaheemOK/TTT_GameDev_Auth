@@ -29,4 +29,4 @@ ENV DJANGO_SETTINGS_MODULE TTT_GameDev_Auth.settings
 # EXPOSE 8001
 
 # Set the command to run your Django application with Gunicorn
-CMD ["gunicorn", "--bind", "0.0.0.0:8001", "your_project_name.wsgi:application"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8001", "TTT_GameDev_Auth.wsgi:application"]
