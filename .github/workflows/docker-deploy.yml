@@ -62,6 +62,9 @@ jobs:
           # Decode and use ARTIFACT_ACCESS_KEY for Docker login inside VM
           cat artifact_access_key.json | base64 -d | docker login -u _json_key --password-stdin https://${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.ARTIFACT_REPO_NAME }}
 
-          # [Docker stop, remove, pull, and run commands as before]
+          docker stop ttt-gamedev-auth-micro || true &&
+          docker rm ttt-gamedev-auth-micro || true &&
+          docker pull europe-west2-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.ARTIFACT_REPO_NAME }}/ttt-gamedev-auth-micro:latest &&
+          docker run -d -p 8080:8080 --name ttt-gamedev-auth-micro europe-west2-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.ARTIFACT_REPO_NAME }}/ttt-gamedev-auth-micro:latest
           EOF
-          set +x  # Disable debugging
+          set +x
