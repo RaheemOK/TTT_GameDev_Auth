@@ -43,6 +43,12 @@ jobs:
           chmod 600 id_rsa_ttt_gda_micro
           echo "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
 
+      - name: Create .env file
+        run: |
+            echo "ALLOWED_HOSTS=${{ secrets.VM_EXTERNAL_IP }}" > .env
+            # Add other environment variables here
+
+
       - name: Deploy to GCE VM
         run: |
           set -x  # Enable debugging
@@ -52,7 +58,7 @@ jobs:
           # Write ARTIFACT_ACCESS_KEY and VM_EXTERNAL_IP to a file and copy to the VM
           echo "${{ secrets.ARTIFACT_ACCESS_KEY }}" > artifact_access_key.json
           scp -i id_rsa_ttt_gda_micro -o StrictHostKeyChecking=no artifact_access_key.json raheem@$IP:~/
-          scp -i id_rsa_ttt_gda_micro -o StrictHostKeyChecking=no vm_external_ip.txt raheem@$IP:~/
+          scp -i id_rsa_ttt_gda_micro -o StrictHostKeyChecking=no .env raheem@$IP:~/
 
           # SSH into the VM and execute Docker-related commands
           ssh -i id_rsa_ttt_gda_micro -o StrictHostKeyChecking=no raheem@$IP <<EOF
@@ -61,13 +67,10 @@ jobs:
           # Decode and use ARTIFACT_ACCESS_KEY for Docker login inside VM
           cat artifact_access_key.json | base64 -d | docker login -u _json_key --password-stdin https://${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.ARTIFACT_REPO_NAME }}
 
-          # Set ALLOWED_HOSTS in your Django settings
-          sed -i "s/ALLOWED_HOSTS = .*/ALLOWED_HOSTS = [os.environ.get('VM_EXTERNAL_IP', '0.0.0.0', '127.0.0.1')]/" TTT_GameDev_Auth/settings.py
-
           docker stop ttt-gamedev-auth-micro || true &&
           docker rm ttt-gamedev-auth-micro || true &&
           docker pull europe-west2-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.ARTIFACT_REPO_NAME }}/ttt-gamedev-auth-micro:latest &&
-          docker run -d -p 8001:8001 --name ttt-gamedev-auth-micro europe-west2-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.ARTIFACT_REPO_NAME }}/ttt-gamedev-auth-micro:latest
+          docker run -d -p 8001:8001 --name ttt-gamedev-auth-micro --env-file .env europe-west2-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.ARTIFACT_REPO_NAME }}/ttt-gamedev-auth-micro:latest
           EOF
           set +x
       

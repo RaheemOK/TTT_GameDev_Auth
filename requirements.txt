@@ -19,3 +19,6 @@ requests==2.31.0
 sqlparse==0.4.4
 urllib3==2.1.0
 wrapt==1.16.0
+
+environ~=1.0
+python-dotenv>=0.19.0

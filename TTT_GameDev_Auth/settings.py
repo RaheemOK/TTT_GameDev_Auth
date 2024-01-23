@@ -12,10 +12,13 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 import os
 from pathlib import Path
 from datetime import timedelta
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Load environment variables from .env file
+load_dotenv()
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -26,10 +29,8 @@ SECRET_KEY = 'django-insecure-v2-!70jui56&n^5*j)c=a(t!n35b*!zf7d-agi70*pui!!a@(j
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-# Define a default value for ALLOWED_HOSTS
-ALLOWED_HOSTS = [os.environ.get('VM_EXTERNAL_IP', "'0.0.0.0', '127.0.0.1'")]
-
-DEFAULT_ALLOWED_HOSTS = ['0.0.0.0', '127.0.0.1']
+# Get ALLOWED_HOSTS from environment variable
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '0.0.0.0, 127.0.0.1').split(',')
 
 # Application definition
 
