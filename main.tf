@@ -22,6 +22,17 @@ resource "google_compute_address" "static_address" {
   region = var.region
 }
 
+resource "google_compute_firewall" "allow-8080" {
+  name    = "allow-8080"
+  network = "default"  # You can change the network name if needed
+  allow {
+    protocol = "tcp"
+    ports    = ["8080"]
+  }
+  source_ranges = ["0.0.0.0/0"]  # You can restrict the source IP range if needed
+  target_tags   = ["allow-8080"]  # Match the tag from the instance
+}
+
 resource "google_compute_instance" "vm_instance" {
   name         = "ttt-gamedev-auth-micro-e2"
   machine_type = "e2-micro"
@@ -39,6 +50,8 @@ resource "google_compute_instance" "vm_instance" {
       nat_ip = google_compute_address.static_address.address
     }
   }
+
+  tags = ["allow-8080"]  # Add the tag for the firewall rule here
 
   metadata = {
     "ssh-keys" = "raheem:${file("id_rsa_ttt_gda_micro.pub")}"
