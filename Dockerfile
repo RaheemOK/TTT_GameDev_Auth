@@ -5,6 +5,9 @@ FROM python:3.10
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
+ARG DJANGO_SETTINGS_MODULE
+ARG ALLOWED_HOSTS
+
 # Set work directory
 WORKDIR /app
 
@@ -24,8 +27,8 @@ RUN pip install gunicorn
 COPY . /app/
 
 # Set environment variables for your Django project
-ENV DJANGO_DEBUG=False
 ENV DJANGO_SETTINGS_MODULE TTT_GameDev_Auth.settings
+ENV ALLOWED_HOSTS=${ALLOWED_HOSTS}
 
 # Expose the port that your application will listen on (if needed)
 # EXPOSE 8001
